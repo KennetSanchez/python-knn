@@ -1,3 +1,4 @@
+from plotly.graph_objs import layout
 from BE import KNN
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -10,11 +11,11 @@ import plotly.graph_objects as go
 class visualizer():
     
     def askData():
-        print("Type the sepal width:")
-        x = int(input())
-        print("Type the sepal length")
-        y = int(input())
-
+        
+        x = float(input("Type the sepal width: "))
+        y = float(input("Type the sepal length: "))
+       
+        
         #The classes matrix works with [y, x] so i have to change the order of my array
         classesData = [y, x]
         
@@ -29,16 +30,16 @@ class visualizer():
         iris = load_iris()
         self.Xvar = iris.data
         self.Yvar = iris.target
-
+        
         X_train, X_test, y_train, y_test = train_test_split(visualizer.Xvar, visualizer.Yvar, test_size=0.3)
 
         data, classes = load_iris(return_X_y=True)
         
     def start():      
-        k = 3
+        k = int(input("How many neighbors: "))
         KNN.__init__(KNN, k)
         KNN.fit(KNN, visualizer.Xvar, visualizer.Yvar)
- 
+
         
         data, classes = load_iris(return_X_y=True)
         
@@ -66,6 +67,7 @@ class visualizer():
         #Classes count
         count = [0, 0, 0]
         count = np.array(count)
+        
         for i in range(len(vecinos)):
             preds.append(Y[vecinos[i]])
         
@@ -90,17 +92,39 @@ class visualizer():
             detectedSpecie = "virginica"
         else:
             print("error")
-    
+              
         newDyc = {"sepal_width": positionData[0], "sepal_length": positionData[1], "species": detectedSpecie}
         df = df.append(newDyc, ignore_index=True)
-        fig2 = px.scatter(df, x="sepal_width", y="sepal_length", color="species")
+        fig2 = px.scatter(df, x="sepal_width", y="sepal_length", color="species")  
+        visualizer.connect_dots(vecinos, classData, visualizer.Xvar, fig2)
+  
+    def connect_dots(neighbours_position, new_dot, main_matrix, fig2):        
+        dot_x = new_dot[1]
+        dot_y = new_dot[0] 
+        
         fig2.show()
+        
+        #Tenemos la posición, hay que tomarlo del arreglo con todos los datos para poder conectarlos
+        for i in range(len(neighbours_position)):
+            neighbour_dot_position = neighbours_position[i-1]
+            neighbour_dot  = visualizer.Xvar[neighbour_dot_position]
+            old_dot_class = visualizer.Yvar[neighbour_dot_position] 
+            
+            neighbour_x = neighbour_dot[1]
+            neighbour_y = neighbour_dot[0]
+            
+            fig2.add_scatter(x=[neighbour_x, dot_x], y=[neighbour_y, dot_y], showlegend=False)
+        
+        
+        fig2.show()
+
         
 if __name__ == '__main__':
     visualizer.__init__(visualizer)
     df = visualizer.start()
     data = visualizer.askData()
     visualizer.addDot(df, data[0], data[1])
+    
     
 
     

@@ -41,8 +41,8 @@ class KNN():
         for i in range(size):
             vector_of_the_matrix = self.data[i]
             np_vector_of_the_matrix = np.array(vector_of_the_matrix)
-            two_vectors_difference = self.calculate_distance(
-                self, datapoint, np_vector_of_the_matrix)
+            two_vectors_difference = self.calculate_distance(self,
+                datapoint, np_vector_of_the_matrix)
             distances.append(two_vectors_difference)
 
         distances = np.array(distances)
@@ -82,7 +82,7 @@ class KNN():
         return np.linalg.norm(array3)
 
     #
-
+    # 
     def fit(self, main_matrix, y):  # main_matrix antes era X
         """
         Train the model, i.e., allocate the dictionary with features by datapoint 
@@ -133,10 +133,15 @@ if __name__ == '__main__':
   X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.3)
   data, classes = load_iris(return_X_y=True)
   k = 3
-  KNN.__init__(KNN, k)
-  KNN.fit(KNN, X, Y)
+  clf = KNN(k)
+  clf.fit( X, Y)
   newData = [8, 8]
-  preds = KNN.get_k_nearest_neighboors(KNN, newData)
+  
+  preds = clf.get_k_nearest_neighboors(newData)
+  y_preds = clf.predict(X_test)
+  #95.55% accuracy
+  print((y_test == y_preds).sum() / len(X_test) )
+  
   print(X)
   print(Y)
   for i in range(k):
