@@ -8,9 +8,36 @@ from sklearn.datasets import load_iris
 import plotly.express as px
 import plotly.graph_objects as go
 
+
 class visualizer():
     
+    def choose_dataset():
+        print("\n")
+        
+        choosed = input("Type the name of the csv: ")       
+        data_set = pd.read_csv("Datasets/"+choosed+".csv")
+        
+        dependent_variable = int(input("Type the column position of the dependent variable from left to right: "))
+        independent_variable = int(input("Type the column position of the independent variable from left to right: "))
+        
+        #data_set = data_set.columns
+        
+        #dv = data_set[dependent_variable]
+        #iv = data_set[independent_variable]
+        
+        #Imprime es la categoría, no los valores
+        for row in data_set:
+            print(row)
+        ##fit(dv, iv)
+
+        
+    def fit_v(x, y):
+       data, classes = x, y     
+        
+        
+        
     def askData():
+        visualizer.choose_dataset()
         
         x = float(input("Type the sepal width: "))
         y = float(input("Type the sepal length: "))
@@ -27,6 +54,7 @@ class visualizer():
 
 
     def __init__(self):
+        
         iris = load_iris()
         self.Xvar = iris.data
         self.Yvar = iris.target
@@ -34,6 +62,7 @@ class visualizer():
         X_train, X_test, y_train, y_test = train_test_split(visualizer.Xvar, visualizer.Yvar, test_size=0.3)
 
         data, classes = load_iris(return_X_y=True)
+        
         
     def start():      
         k = int(input("How many neighbors: "))
@@ -97,14 +126,16 @@ class visualizer():
         df = df.append(newDyc, ignore_index=True)
         fig2 = px.scatter(df, x="sepal_width", y="sepal_length", color="species")  
         visualizer.connect_dots(vecinos, classData, visualizer.Xvar, fig2)
+
   
     def connect_dots(neighbours_position, new_dot, main_matrix, fig2):        
         dot_x = new_dot[1]
         dot_y = new_dot[0] 
         
-        fig2.show()
         
+        fig2.show()
         #Tenemos la posición, hay que tomarlo del arreglo con todos los datos para poder conectarlos
+        
         for i in range(len(neighbours_position)):
             neighbour_dot_position = neighbours_position[i-1]
             neighbour_dot  = visualizer.Xvar[neighbour_dot_position]
@@ -115,7 +146,7 @@ class visualizer():
             
             fig2.add_scatter(x=[neighbour_x, dot_x], y=[neighbour_y, dot_y], showlegend=False)
         
-        
+
         fig2.show()
 
         

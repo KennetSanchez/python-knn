@@ -104,6 +104,14 @@ class KNN():
           predictions: numpy.ndarray, class predicted for each datapoint in X
         """
         preds = []
+        """
+        for(int i = 0 ; i < x.length() ; i++){
+          datapoint = X[i]
+        }
+        
+        
+        """
+        
         for datapoint in X:
             index = self.get_k_nearest_neighboors(self, datapoint)
             # Obtener los indices de las clases
@@ -115,6 +123,7 @@ class KNN():
             # Retorna el índice del mayor valor
             preds.append(predicted_class)
         return np.array(preds)
+    """
 
     def getClass(data):
       pred = []
@@ -123,6 +132,7 @@ class KNN():
         pred.append(KNN.classes[data[i]])
       pred = np.array(pred) 
       return pred
+      """
       
           
 
