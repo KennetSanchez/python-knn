@@ -18,7 +18,27 @@ class visualizer():
         data_set = pd.read_csv("Datasets/"+choosed+".csv")
         
         dependent_variable = int(input("Type the column position of the dependent variable from left to right: "))
+        
+        ##Recibir 2 independientes para graficar; 1 dependiente para cambiar el color
+        
         independent_variable = int(input("Type the column position of the independent variable from left to right: "))
+        
+        #Verificar que el archivo sea .csv
+        
+        ##Forma óptima
+        temp = data_set.values
+        f = data_set.iloc[:,1]
+        f.min(axis = 0)
+        
+        
+        #La dependiente no se normaliza
+        #Normalización ( hacer para las independientes):
+        temp = (temp-temp.min(axis = 0))/(temp.max(axis = 0)-temp.min(axis = 0))
+        
+        #Axis 0 filas; axis 1 columnas
+              
+        print(f)
+        
         
         #data_set = data_set.columns
         
@@ -26,9 +46,16 @@ class visualizer():
         #iv = data_set[independent_variable]
         
         #Imprime es la categoría, no los valores
-        for row in data_set:
-            print(row)
+        #print(data_set['SepalLengthCm'])
+        
+        #Escoge por filas; no columnas
+        #print(data_set.iloc[1, 'SepalLengthCm'])
+        #data_set.iloc
         ##fit(dv, iv)
+        
+        
+        ##Normalizar features antes de pasarlo al knn 
+        # por cada variable (para cada índice) =  -mínimo / (máximo - mínimo)  queda entre 0 y 1
 
         
     def fit_v(x, y):
@@ -72,11 +99,13 @@ class visualizer():
         
         data, classes = load_iris(return_X_y=True)
         
-        #Graphic    
+        #Graphic  
+        
+        #Df = el dataset que carguen  
         df = px.data.iris()
         df = df[["sepal_width", "sepal_length", "species"]]
         fig = px.scatter(df, x="sepal_width", y="sepal_length", color="species")
-        fig.show()
+        #fig.show()
         return df
             
 
