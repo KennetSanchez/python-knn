@@ -10,138 +10,120 @@ import plotly.graph_objects as go
 
 
 class visualizer():
-    
+
     def choose_dataset():
         print("\n")
-        
-        choosed = input("Type the name of the csv: ")       
-        data_set = pd.read_csv("Datasets/"+choosed+".csv")
-        
-        dependent_variable = int(input("Type the column position of the dependent variable from left to right: "))
-        
-        ##Recibir 2 independientes para graficar; 1 dependiente para cambiar el color
-        
-        independent_variable = int(input("Type the column position of the independent variable from left to right: "))
-        
-        #Verificar que el archivo sea .csv
-        
-        ##Forma óptima
-        temp = data_set.values
-        f = data_set.iloc[:,1]
-        f.min(axis = 0)
-        
-        
-        #La dependiente no se normaliza
-        #Normalización ( hacer para las independientes):
-        temp = (temp-temp.min(axis = 0))/(temp.max(axis = 0)-temp.min(axis = 0))
-        
-        #Axis 0 filas; axis 1 columnas
-              
-        print(f)
-        
-        
-        #data_set = data_set.columns
-        
-        #dv = data_set[dependent_variable]
-        #iv = data_set[independent_variable]
-        
-        #Imprime es la categoría, no los valores
-        #print(data_set['SepalLengthCm'])
-        
-        #Escoge por filas; no columnas
-        #print(data_set.iloc[1, 'SepalLengthCm'])
-        #data_set.iloc
-        ##fit(dv, iv)
-        
-        
-        ##Normalizar features antes de pasarlo al knn 
-        # por cada variable (para cada índice) =  -mínimo / (máximo - mínimo)  queda entre 0 y 1
 
-        
+        choosed = input("Type the name of the csv: ")
+        data_set = pd.read_csv("Datasets/"+choosed+".csv")
+
+        independent_variable1 = int(input(
+            "Type the column position of the dependent variable 1 (x) (must be numeric) from left to right: "))-1
+        independent_variable2 = int(input(
+            "Type the column position of the dependent variable 2 (y) (must be numeric) from left to right: "))-1
+
+        dependent_variable = int(input(
+            "Type the column position of the independent variable (must be numeric) from left to right: "))-1
+
+        # Verificar que el archivo sea .csv
+
+        # Forma óptima
+        temp = data_set.values
+        x = data_set.iloc[:, [independent_variable1, independent_variable2]]
+
+        # La dependiente no se normaliza
+        # Normalización ( hacer para las independientes):
+        x = (x-x.min(axis=0))/(x.max(axis=0)-x.min(axis=0))
+
+        y = data_set.iloc[:, dependent_variable]
+
+        KNN.fit(KNN, x, y)
+
+        # Tomar etiquetas posibles
+        numColumn = y.factorize()[1]
+        tagColumn = y.factorize()[0]
+
+        # Para tomar el nombre poner el índice en el tag column
+
+        vid1 = data_set.columns[independent_variable1] + ""
+        vid2 = data_set.columns[independent_variable2] + ""
+        dv1 = data_set.columns[dependent_variable] + ""
+
+        df = data_set[[vid1, vid2, dv1]]
+        fig = px.scatter(df, x=vid1, y=vid2, color=dv1)
+        fig.show()
+        return df
+
     def fit_v(x, y):
-       data, classes = x, y     
-        
-        
-        
+       data, classes = x, y
+
     def askData():
-        visualizer.choose_dataset()
-        
-        x = float(input("Type the sepal width: "))
-        y = float(input("Type the sepal length: "))
-       
-        
-        #The classes matrix works with [y, x] so i have to change the order of my array
-        classesData = [y, x]
-        
-        #The position works as usual, so i need it in the normal order
-        positionData = [x, y]
+        dfR = visualizer.choose_dataset()
+
+        k = int(input("How many neighbors: "))
+        knn = KNN(k)
+
+        x1 = float(input("Type the value of  feature 1 (x): "))
+        x2 = float(input("Type the value of feature 2 (y): "))
+
+        # The classes matrix works with [y, x] so i have to change the order of my array
+        classesData = [x1, x2]
+
+        # The position works as usual, so i need it in the normal order
+        positionData = [x1, x2]
         data = [classesData, positionData]
-        
+
+        visualizer.addDot(dfR, classesData, positionData)
         return data
 
-
     def __init__(self):
-        
-        iris = load_iris()
-        self.Xvar = iris.data
-        self.Yvar = iris.target
-        
-        X_train, X_test, y_train, y_test = train_test_split(visualizer.Xvar, visualizer.Yvar, test_size=0.3)
+        self.start()
 
-        data, classes = load_iris(return_X_y=True)
-        
-        
-    def start():      
-        k = int(input("How many neighbors: "))
-        KNN.__init__(KNN, k)
-        KNN.fit(KNN, visualizer.Xvar, visualizer.Yvar)
+    def start():
+        data = visualizer.askData()
+        # Graphic
 
-        
-        data, classes = load_iris(return_X_y=True)
-        
-        #Graphic  
-        
-        #Df = el dataset que carguen  
-        df = px.data.iris()
-        df = df[["sepal_width", "sepal_length", "species"]]
-        fig = px.scatter(df, x="sepal_width", y="sepal_length", color="species")
-        #fig.show()
+        # Df = el dataset que carguen
         return df
-            
 
     def addDot(df, classData, positionData):
 
-        
-        #Para los cercanos
+        # Para los cercanos
         vecinos = KNN.get_k_nearest_neighboors(KNN, classData)
         vecinos = np.array(vecinos)
         Y = KNN.predict(KNN, visualizer.Xvar)
-        
+
         preds = []
-        
-        #Classes numeration
+
+        # Classes numeration
         classes = [0, 1, 2]
-        
-        #Classes count
+
+        # Classes count
         count = [0, 0, 0]
         count = np.array(count)
+
         
         for i in range(len(vecinos)):
             preds.append(Y[vecinos[i]])
-        
+
         for i in range(len(preds)):
             for j in range(len(classes)):
                 if(preds[i] == classes[j]):
                     count[j] += 1
-                     
+
         mostRepitedValue = 0
-        
+
         for i in range(len(count)-1):
             if(count[i] > count[i+1]):
                 mostRepitedValue = i
 
         detectedSpecie = preds[mostRepitedValue]
-        
+
+        # Hacer escalable
+
+       # Hacer que lo detecte desde  la selección de columnas para tomar los nombres como es
+
+        """"
         if(detectedSpecie == 0):
             detectedSpecie = "setosa"
         elif(detectedSpecie == 1):
@@ -150,11 +132,14 @@ class visualizer():
             detectedSpecie = "virginica"
         else:
             print("error")
+       
+        Se crea el diccionario y luego se añade al df que ya teníamos
               
         newDyc = {"sepal_width": positionData[0], "sepal_length": positionData[1], "species": detectedSpecie}
         df = df.append(newDyc, ignore_index=True)
         fig2 = px.scatter(df, x="sepal_width", y="sepal_length", color="species")  
         visualizer.connect_dots(vecinos, classData, visualizer.Xvar, fig2)
+        """
 
   
     def connect_dots(neighbours_position, new_dot, main_matrix, fig2):        
@@ -163,7 +148,7 @@ class visualizer():
         
         
         fig2.show()
-        #Tenemos la posición, hay que tomarlo del arreglo con todos los datos para poder conectarlos
+        # Tenemos la posición, hay que tomarlo del arreglo con todos los datos para poder conectarlos
         
         for i in range(len(neighbours_position)):
             neighbour_dot_position = neighbours_position[i-1]
@@ -182,8 +167,8 @@ class visualizer():
 if __name__ == '__main__':
     visualizer.__init__(visualizer)
     df = visualizer.start()
-    data = visualizer.askData()
-    visualizer.addDot(df, data[0], data[1])
+    # data = visualizer.askData()
+    # visualizer.addDot(df, data[0], data[1])
     
     
 

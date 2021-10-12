@@ -21,6 +21,7 @@ class KNN():
         # Dimensions used (2, x and y)
         self.dimensions = 2
         self.classPosition = 4
+        
 
     # Recibe el vector a evaluar
     def get_k_nearest_neighboors(self, datapoint):
@@ -32,14 +33,18 @@ class KNN():
           indices: list, indices corresponding with the k datapoints in self.X most
                    similar to datapoint
         """
-
+        #print("Data: " + self.data)
         distances = []  # distances between the matrix and the datapoint
 
         size = len(self.data)
         vector_of_the_matrix = []
+        print(self.data[0])        
+        print(datapoint)
 
         for i in range(size):
+            print(self.data[i])
             vector_of_the_matrix = self.data[i]
+            
             np_vector_of_the_matrix = np.array(vector_of_the_matrix)
             two_vectors_difference = self.calculate_distance(self,
                 datapoint, np_vector_of_the_matrix)
@@ -94,6 +99,7 @@ class KNN():
         """
         self.data = main_matrix
         self.classes = y
+        print("Data: " + self.data)
 
     def predict(self, X):
         """
