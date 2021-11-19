@@ -1,3 +1,4 @@
+from numpy.core.fromnumeric import size
 from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
@@ -10,7 +11,7 @@ import plotly.graph_objects as go
 
 class KNN():
 
-    def __init__(self, k):
+    def __init__(self, k = 5, dimensions = 2, classPosition = 4):
         """
         Creates a new KNN object.
 
@@ -19,8 +20,8 @@ class KNN():
         """
         self.k = k
         # Dimensions used (2, x and y)
-        self.dimensions = 2
-        self.classPosition = 4
+        self.dimensions = dimensions
+        self.classPosition = classPosition
         
 
     # Recibe el vector a evaluar
@@ -38,16 +39,14 @@ class KNN():
 
         size = len(self.data)
         vector_of_the_matrix = []
-        print(self.data[0])        
-        print(datapoint)
+              
+
 
         for i in range(size):
-            print(self.data[i])
             vector_of_the_matrix = self.data[i]
-            
+            #vector_of_the_matrix = self.data.values[i]
             np_vector_of_the_matrix = np.array(vector_of_the_matrix)
-            two_vectors_difference = self.calculate_distance(self,
-                datapoint, np_vector_of_the_matrix)
+            two_vectors_difference = self.calculate_distance(datapoint, vector_of_the_matrix)
             distances.append(two_vectors_difference)
 
         distances = np.array(distances)
@@ -72,18 +71,26 @@ class KNN():
         """
 
         # Parse to x dimesions of the main matrix
-
+        n = 2
+        
+        #Este datapoint al final tiene dos columnas de strings y probablemente eso es lo que causa el error SepalWidthCm ^ SepalWidthCm
+        
         formatedDTP = []
 
+        ##datapoint 1 es una lista con elementos que son floats
         
         for i in range(self.dimensions):
             formatedDTP.append(datapoint2[i])
 
         formatedDTP = np.array(formatedDTP)
-        if(len(datapoint1) != len(datapoint2)):
-              array3 = np.subtract(formatedDTP, datapoint1)
+        #n = 2
+        #del datapoint1[-n:]
+        #ValueError: operands could not be broadcast together with shapes (2,) (0,)
+        if(len(datapoint1) != len(datapoint2)):              
+            array3 = np.subtract(formatedDTP, datapoint1)
         else:
-              array3 = np.subtract(datapoint2, datapoint1)
+          array3 = np.subtract(datapoint2, datapoint1)
+              
         return np.linalg.norm(array3)
 
     #
@@ -99,7 +106,6 @@ class KNN():
         """
         self.data = main_matrix
         self.classes = y
-        print("Data: " + self.data)
 
     def predict(self, X):
         """
@@ -110,16 +116,9 @@ class KNN():
           predictions: numpy.ndarray, class predicted for each datapoint in X
         """
         preds = []
-        """
-        for(int i = 0 ; i < x.length() ; i++){
-          datapoint = X[i]
-        }
-        
-        
-        """
-        
+                
         for datapoint in X:
-            index = self.get_k_nearest_neighboors(self, datapoint)
+            index = self.get_k_nearest_neighboors(datapoint)
             # Obtener los indices de las clases
             classes = np.array([self.classes[idX] for idX in index])
             # Obtener la clase mas frecuente de los vecinos mas cercanos

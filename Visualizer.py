@@ -9,17 +9,17 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
-class visualizer():
+class Visualizer():
 
-    def choose_dataset():
+    def choose_dataset(self):
         print("\n")
 
         choosed = input("Type the name of the csv: ")
         data_set = pd.read_csv("Datasets/"+choosed+".csv")
 
-        independent_variable1 = int(input(
+        self.independent_variable1 = int(input(
             "Type the column position of the dependent variable 1 (x) (must be numeric) from left to right: "))-1
-        independent_variable2 = int(input(
+        self.independent_variable2 = int(input(
             "Type the column position of the dependent variable 2 (y) (must be numeric) from left to right: "))-1
 
         dependent_variable = int(input(
@@ -29,80 +29,117 @@ class visualizer():
 
         # Forma óptima
         temp = data_set.values
-        x = data_set.iloc[:, [independent_variable1, independent_variable2]]
-
+        x = data_set.iloc[:, [self.independent_variable1, self.independent_variable2]]
+        x = x.astype("float64")
+        x = x.values
+        self.X_whitout_normalization = x
         # La dependiente no se normaliza
         # Normalización ( hacer para las independientes):
-        x = (x-x.min(axis=0))/(x.max(axis=0)-x.min(axis=0))
+
+        self.xmin = x.min(axis=0)
+        self.xmax = x.max(axis=0)
+
+        self.Xvar = (x-self.xmin)/(self.xmax-self.xmin)
 
         y = data_set.iloc[:, dependent_variable]
+        self.Yvar = y.factorize()[0]
 
-        KNN.fit(KNN, x, y)
+        self.categories = y.unique()
+
+        self.knn.fit(self.Xvar, self.Yvar)
 
         # Tomar etiquetas posibles
-        numColumn = y.factorize()[1]
-        tagColumn = y.factorize()[0]
+        # self.tagColumn = y.factorize()[1]
+        # self.numColumn = y.factorize()[0]
 
         # Para tomar el nombre poner el índice en el tag column
 
-        vid1 = data_set.columns[independent_variable1] + ""
-        vid2 = data_set.columns[independent_variable2] + ""
-        dv1 = data_set.columns[dependent_variable] + ""
+        self.vid1 = data_set.columns[self.independent_variable1] + ""
+        self.vid2 = data_set.columns[self.independent_variable2] + ""
+        self.dv1 = data_set.columns[dependent_variable] + ""
 
-        df = data_set[[vid1, vid2, dv1]]
-        fig = px.scatter(df, x=vid1, y=vid2, color=dv1)
+
+        df = data_set[[self.vid1, self.vid2, self.dv1]]
+        cols = df.columns
+        fig = px.scatter(df, x=self.vid1, y=self.vid2, color=self.dv1)
+
+
         fig.show()
         return df
 
     def fit_v(x, y):
        data, classes = x, y
 
-    def askData():
-        dfR = visualizer.choose_dataset()
-
+    def askData(self):
+        self.dfR = self.choose_dataset()
         k = int(input("How many neighbors: "))
-        knn = KNN(k)
+        self.knn.k = k
 
-        x1 = float(input("Type the value of  feature 1 (x): "))
-        x2 = float(input("Type the value of feature 2 (y): "))
+        self.position_x = float(input("Type the value of  feature 1 (x): "))
+        self.position_y = float(input("Type the value of feature 2 (y): "))
 
         # The classes matrix works with [y, x] so i have to change the order of my array
+        x1 = self.position_x-self.xmin/(self.xmax-self.xmin)
+        x2 = self.position_y-self.xmin/(self.xmax-self.xmin)
+
         classesData = [x1, x2]
 
         # The position works as usual, so i need it in the normal order
         positionData = [x1, x2]
         data = [classesData, positionData]
 
-        visualizer.addDot(dfR, classesData, positionData)
+        self.addDot(classesData, positionData)
         return data
 
-    def __init__(self):
-        self.start()
+    def __init__(self, knn):
+        self.knn = knn
+        self.Xvar = None
+        self.Yvar = None
+        self.dfR = None
+        self.tagColumn = None
+        self.numColumn = None
+        self.vid1 = None
+        self.vid2 = None
+        self.dv1 = None
+        self.xmin = None
+        self.xmax = None
+        self.categories = None
+        self.X_whitout_normalization = None
+        self.independent_variable1  = None
+        self.independent_variable2  = None
+        self.position_x = None
+        self.position_y = None
 
-    def start():
-        data = visualizer.askData()
+
+
+
+    def start(self):
+        data = self.askData()
         # Graphic
 
         # Df = el dataset que carguen
-        return df
+        return data
 
-    def addDot(df, classData, positionData):
+    ##Borrar positionData
+    def addDot(self, classData, positionData):
 
         # Para los cercanos
-        vecinos = KNN.get_k_nearest_neighboors(KNN, classData)
+        vecinos = self.knn.get_k_nearest_neighboors(classData)
         vecinos = np.array(vecinos)
-        Y = KNN.predict(KNN, visualizer.Xvar)
+        Y = self.knn.predict(self.Xvar)
 
         preds = []
+        count = []
 
         # Classes numeration
-        classes = [0, 1, 2]
+        classes = []
+        for i in range (len(self.categories)):
+            classes.append(i-1)
+            count.append(0)
 
-        # Classes count
-        count = [0, 0, 0]
         count = np.array(count)
 
-        
+
         for i in range(len(vecinos)):
             preds.append(Y[vecinos[i]])
 
@@ -117,59 +154,42 @@ class visualizer():
             if(count[i] > count[i+1]):
                 mostRepitedValue = i
 
-        detectedSpecie = preds[mostRepitedValue]
+        detectedClass = preds[mostRepitedValue]
+        detectedClass = self.categories[detectedClass]
 
-        # Hacer escalable
+        newDyc = {self.vid1: self.position_x, self.vid2: self.position_y, self.dv1: detectedClass}
+        self.dfR.append(newDyc,ignore_index=True)
+        #self.dfR.append(newDyc, ignore_index=True)
 
-       # Hacer que lo detecte desde  la selección de columnas para tomar los nombres como es
+        fig2 = px.scatter(self.dfR, x=self.vid1, y=self.vid2, color=self.dv1)
+        fig2.show()
 
-        """"
-        if(detectedSpecie == 0):
-            detectedSpecie = "setosa"
-        elif(detectedSpecie == 1):
-            detectedSpecie = "versicolor"
-        elif(detectedSpecie == 2):
-            detectedSpecie = "virginica"
-        else:
-            print("error")
+
+        self.connect_dots(vecinos, positionData, fig2)
+
+
+    def connect_dots(self, neighbours_position, position_data, fig2):
        
-        Se crea el diccionario y luego se añade al df que ya teníamos
-              
-        newDyc = {"sepal_width": positionData[0], "sepal_length": positionData[1], "species": detectedSpecie}
-        df = df.append(newDyc, ignore_index=True)
-        fig2 = px.scatter(df, x="sepal_width", y="sepal_length", color="species")  
-        visualizer.connect_dots(vecinos, classData, visualizer.Xvar, fig2)
-        """
 
   
-    def connect_dots(neighbours_position, new_dot, main_matrix, fig2):        
-        dot_x = new_dot[1]
-        dot_y = new_dot[0] 
-        
-        
-        fig2.show()
         # Tenemos la posición, hay que tomarlo del arreglo con todos los datos para poder conectarlos
-        
+
         for i in range(len(neighbours_position)):
-            neighbour_dot_position = neighbours_position[i-1]
-            neighbour_dot  = visualizer.Xvar[neighbour_dot_position]
-            old_dot_class = visualizer.Yvar[neighbour_dot_position] 
-            
-            neighbour_x = neighbour_dot[1]
-            neighbour_y = neighbour_dot[0]
-            
-            fig2.add_scatter(x=[neighbour_x, dot_x], y=[neighbour_y, dot_y], showlegend=False)
-        
+            neighbour_dot_position = neighbours_position[i]
+            neighbour_dot  = self.X_whitout_normalization[neighbour_dot_position]
+            old_dot_class = self.Yvar[neighbour_dot_position]
+
+            neighbour_y = neighbour_dot[1]
+            neighbour_x = neighbour_dot[0]
+
+            fig2.add_scatter(x=[neighbour_x, self.position_x], y=[neighbour_y, self.position_y], showlegend=False, line_color='black')
+
 
         fig2.show()
 
-        
-if __name__ == '__main__':
-    visualizer.__init__(visualizer)
-    df = visualizer.start()
-    # data = visualizer.askData()
-    # visualizer.addDot(df, data[0], data[1])
-    
-    
 
-    
+if __name__ == '__main__':
+    knn = KNN()
+    vis = Visualizer(knn)
+    data = vis.start()
+    #vis.addDot(data[0], data[1])
